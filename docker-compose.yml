@@ -1,0 +1,75 @@
+version: '3.4'
+x-restart-policy: &restart_policy
+  restart: unless-stopped
+x-dd-defaults: &dd_defaults
+  << : *restart_policy
+  build:
+    context: ./backend
+  environment:
+    - REDIS_URI
+    - CELERY_BROKER_URL
+    - C_FORCE_ROOT=true
+    - MYSQL_DATABASE
+    - MYSQL_USER
+    - MYSQL_PASSWORD
+    - MYSQL_HOST
+  volumes:
+    - 'dd-static:/static/'
+services:
+  backend:
+    <<: *dd_defaults
+  frontend:
+    <<: *restart_policy
+    build:
+      context: './frontend'
+  mysql:
+    <<: *restart_policy
+    image: 'mysql:8.0.26'
+    volumes:
+      - 'dd-mysql-data:/var/lib/mysql'
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+  beat:
+    <<: *dd_defaults
+    command: run beat
+  worker:
+    <<: *dd_defaults
+    command: run worker
+  nginx:
+    <<: *restart_policy
+    ports:
+      - '$HD_BIND:80/tcp'
+    image: 'nginx:1.19.5-alpine'
+    volumes:
+      - 'dd-static:/backend/static/'
+      - 'dd-nginx-log:/var/log/nginx/'
+      - type: bind
+        read_only: true
+        source: ./nginx/nginx.conf
+        target: /etc/nginx/nginx.conf
+    depends_on:
+      - backend
+      - frontend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100M"
+        max-file: "10"
+  redis:
+    <<: *restart_policy
+    image: 'redis:6.2-alpine'
+    volumes:
+      - 'dd-redis:/data'
+    ulimits:
+      nofile:
+        soft: 10032
+        hard: 10032
+
+volumes:
+    dd-static:
+    dd-nginx-log:
+    dd-redis:
+    dd-mysql-data:

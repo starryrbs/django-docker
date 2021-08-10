@@ -1,0 +1,5 @@
+# django
+Django==3.2.6
+djangorestframework==3.12.4
+django-comment-migrate==0.1.4
+pymysql==1.0.2

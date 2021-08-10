@@ -1,0 +1,46 @@
+.pip-set-registry: &pip-set-registry
+  before_script:
+    - pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+    - pip config set global.extra-index-url http://pypi.fooww.net/simple/
+    - pip config set install.trusted-host pypi.fooww.net
+    - python -V
+    - pip install pip==19.3
+
+
+tox test:
+  <<: *pip-set-registry
+  image: python:3.9-buster
+  cache:
+    paths:
+      - ${PIP_CACHE_DIR}
+  services:
+    - redis:6.2-alpine
+  stage: test
+  when: manual
+  variables:
+    REDIS_URI: redis://redis:6379/1
+  script:
+    - pwd
+    - cd backend
+    - pip install tox
+    - tox
+
+
+build backend imgae:
+  stage: build
+  image: docker:19.03.12
+  variables:
+    CI_REGISTRY_IMAGE: "backend"
+  when: manual
+  before_script:
+    - echo $CI_REGISTRY_USER
+    - echo $CI_REGISTRY_PASSWORD
+    - echo $CI_REGISTRY
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - cd backend
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" .
+    - docker tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" "$CI_REGISTRY/$CI_REGISTRY_ORGANIZATION_NAME/$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - docker push "$CI_REGISTRY/$CI_REGISTRY_ORGANIZATION_NAME/$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - docker tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" "$CI_REGISTRY/$CI_REGISTRY_ORGANIZATION_NAME/$CI_REGISTRY_IMAGE:latest"
+    - docker push "$CI_REGISTRY/$CI_REGISTRY_ORGANIZATION_NAME/$CI_REGISTRY_IMAGE:latest"
