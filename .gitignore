@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+node_modules/
 
 # C extensions
 *.so
@@ -76,11 +77,6 @@ docker-compose.override.yml
 data/
 .vscode/tags
 
-# custom Sentry config
-brahma/brahma.conf.py
-brahma/config.yml
-brahma/*.bak
-brahma/requirements.txt
-relay/credentials.json
-relay/config.yml
-symbolicator/config.yml
+
+backend/db.sqlite3
+frontend/node_modules/*
