@@ -13,9 +13,12 @@ COPY requirements.txt /app/
 RUN pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
 RUN pip config set global.extra-index-url https://pypi.tuna.tsinghua.edu.cn/simple/
 RUN pip install pip==19.3
+RUN pip install -r requirements.txt
 RUN pip install gunicorn gevent==20.9.0
 
 COPY . .
+
+ENV DJANGO_SETTINGS_MODULE=django_docker.settings
 
 RUN python manage.py collectstatic
 RUN ls static/

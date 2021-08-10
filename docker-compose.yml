@@ -41,7 +41,7 @@ services:
   nginx:
     <<: *restart_policy
     ports:
-      - '$HD_BIND:80/tcp'
+      - '$DD_BIND:80/tcp'
     image: 'nginx:1.19.5-alpine'
     volumes:
       - 'dd-static:/backend/static/'

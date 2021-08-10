@@ -37,8 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'rest_framework'
+    # 第三方插件
+    'rest_framework',
+    'django_comment_migrate',
+    # 内部app
+    'project'
 ]
 
 MIDDLEWARE = [
@@ -79,12 +82,16 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         "NAME": os.getenv("MYSQL_DATABASE", "django_docker"),
         "USER": os.getenv("MYSQL_USER", "root"),
-        "PASSWORD": os.getenv("MYSQL_PASSWORD", "123456"),
+        "PASSWORD": os.getenv("MYSQL_PASSWORD", ""),
         "HOST": os.getenv("MYSQL_HOST", "localhost"),
         "PORT": os.getenv("MYSQL_PORT", 3306),
         "OPTIONS": {
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
             "charset": "utf8mb4",
+        },
+        'TEST': {
+            'CHARSET': 'utf8mb4',
+            'COLLATION': 'utf8mb4_unicode_ci',
         },
     }
 }
@@ -124,3 +131,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+REST_FRAMEWORK = {'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'}
